@@ -1,11 +1,17 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 from scraper import fetch_foodlist
 
 app = FastAPI(title="Foodlist API", description="API to fetch scraped food lists.")
 
+os.makedirs("static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Foodlist API. Access /api/foodlist to get the data."}
+    return FileResponse("static/index.html")
 
 @app.get("/api/foodlist")
 def get_foodlist():
