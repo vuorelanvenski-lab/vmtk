@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  foodlist-api:
+    build: .
+    container_name: foodlist-api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
