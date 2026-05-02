@@ -131,8 +131,17 @@
             font-size: 15vh;
             font-weight: 700;
             color: #fff;
-            line-height: 0.9;
+            line-height: 1;
             text-shadow: 0 0 30px rgba(22, 163, 74, 0.5);
+        }
+
+        .tj-sidebar-batch {
+            font-size: 3vh;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.2vh;
+            margin-top: 1vh;
         }
 
         /* Main Content Area */
@@ -140,8 +149,8 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 2.5vh;
-            gap: 2.5vh;
+            padding: 2vh;
+            gap: 1.5vh;
             min-width: 0;
         }
 
@@ -295,20 +304,201 @@
             background: #333;
             border-radius: 10px;
         }
+
+        /* Batch Selection Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-green);
+            border-radius: 30px;
+            padding: 4vh;
+            max-width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(22, 163, 74, 0.2);
+        }
+
+        .modal-title {
+            font-size: 4vh;
+            font-weight: 700;
+            margin-bottom: 4vh;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .batch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(15vh, 1fr));
+            gap: 2vh;
+        }
+
+        .batch-item {
+            background: rgba(22, 163, 74, 0.1);
+            border: 1px solid rgba(22, 163, 74, 0.3);
+            padding: 2.5vh;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 2.5vh;
+            font-weight: 700;
+        }
+
+        .batch-item:hover {
+            background: var(--accent-green);
+            color: #000;
+            transform: scale(1.05);
+        }
+
+        .batch-item.active {
+            background: var(--accent-green);
+            color: #000;
+            box-shadow: 0 0 20px rgba(22, 163, 74, 0.5);
+        }
+
+        #tj-sidebar {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #tj-sidebar:hover {
+            transform: scale(1.1);
+            text-shadow: 0 0 40px rgba(22, 163, 74, 0.8);
+        }
+
+        /* Fun Sentence Ticker */
+        .ticker-wrap {
+            width: 100%;
+            background: transparent;
+            padding: 1.5vh 0;
+            overflow: hidden;
+            white-space: nowrap;
+            display: none;
+            margin-top: auto;
+        }
+
+        .ticker {
+            display: inline-block;
+            font-size: 3vh;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            padding-left: 100%;
+            animation: ticker-animation 10s linear infinite, rainbow-glow 5s linear infinite, floating 2s ease-in-out infinite alternate;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes ticker-animation {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        @keyframes rainbow-glow {
+            0% { color: #fff; text-shadow: 0 0 10px #ff0000; }
+            20% { color: #fff; text-shadow: 0 0 10px #ffff00; }
+            40% { color: #fff; text-shadow: 0 0 10px #00ff00; }
+            60% { color: #fff; text-shadow: 0 0 10px #00ffff; }
+            80% { color: #fff; text-shadow: 0 0 10px #0000ff; }
+            100% { color: #fff; text-shadow: 0 0 10px #ff00ff; }
+        }
+
+        @keyframes floating {
+            0% { margin-top: -0.5vh; }
+            100% { margin-top: 0.5vh; }
+        }
+
+        /* Message Input Modal */
+        #message-input-container {
+            margin-top: 3vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1vh;
+        }
+
+        #fun-input {
+            background: #222;
+            border: 1px solid var(--accent-green);
+            color: #fff;
+            padding: 1.5vh;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1.8vh;
+            width: 100%;
+            outline: none;
+        }
+
+        /* Author Card Style */
+        .author-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2vh;
+            padding: 2vh;
+        }
+
+        .author-avatar {
+            width: 15vh;
+            height: 15vh;
+            background: linear-gradient(135deg, var(--accent-green), #064e3b);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 6vh;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(22, 163, 74, 0.4);
+        }
+
+        .author-name {
+            font-size: 3vh;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .author-info {
+            font-size: 1.8vh;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        .weather-box {
+            cursor: pointer;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .weather-box:hover {
+            transform: scale(1.02);
+            border-color: var(--accent-green);
+        }
     </style>
 </head>
 
 <body>
     <!-- Sidebar with Large Logo -->
     <aside class="sidebar">
-        <img src="/static/kh.svg" alt="KH Logo">
+        <img src="/static/kh.svg" alt="KH Logo" onclick="openMessageModal()" style="cursor: pointer;">
 
         <div class="tj-sidebar-box">
             <div class="tj-sidebar-label">TJ</div>
-            <div class="tj-sidebar-value" id="tj-sidebar">--</div>
+            <div class="tj-sidebar-value" id="tj-sidebar" onclick="openModal()">--</div>
         </div>
 
-        <div class="weather-box" id="weather-widget" style="display: none;">
+        <div class="weather-box" id="weather-widget" style="display: none;" onclick="openAuthorModal()">
             <div class="weather-title">Kajaani</div>
             <div class="weather-main">
                 <i class="fas fa-cloud-sun weather-icon" id="w-icon"></i>
@@ -323,18 +513,70 @@
                 </div>
             </div>
         </div>
+
+        <!-- Ticker inside sidebar -->
+        <div class="ticker-wrap" id="ticker-wrap">
+            <div class="ticker" id="ticker-text"></div>
+        </div>
     </aside>
+
+    <!-- Batch Selection Modal -->
+    <div id="batch-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title">Valitse saapumiserä</div>
+            <div class="batch-grid" id="batch-grid">
+                <!-- Batches will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="message-modal" class="modal-overlay" onclick="closeMessageModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title">Mujautus lause</div>
+            <input type="text" id="fun-input" placeholder="Kirjoita jotain hauskaa..." oninput="updateTicker()">
+            <button onclick="closeMessageModal()"
+                style="margin-top: 3vh; background: var(--accent-green); color: #000; border: none; padding: 1.5vh 4vh; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 2vh;">OK</button>
+            <div style="margin-top: 2vh; color: var(--text-dim); font-size: 1.5vh;">Pyyhi tyhjäksi poistaaksesi</div>
+        </div>
+    </div>
+
+    <!-- Author Modal -->
+    <div id="author-modal" class="modal-overlay" onclick="closeAuthorModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title">Tekijä</div>
+            <div class="author-card">
+                <div class="author-avatar">
+                    <i class="fas fa-user-ninja"></i>
+                </div>
+                <div class="author-name">Jääk Vuorela 1/26</div>
+                <div class="author-info">
+                    Jos sivua pitää päivittää/korjata<br>
+                    ota minuun yhteys instagramissa VMTK:n tililtä<br>
+                    @vuorelaverneri
+                </div>
+                <button onclick="closeAuthorModal()"
+                    style="margin-top: 2vh; background: #333; color: #fff; border: 1px solid #444; padding: 1vh 3vh; border-radius: 10px; font-weight: 500; cursor: pointer;">Sulje</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticker was here, now moved to sidebar -->
 
     <!-- Main Content -->
     <div class="content">
         <header class="top-bar">
-            <div class="header-date" id="date"></div>
-            <div class="header-progress">
+            <div id="header-batch"
+                style="font-size: 3.2vh; font-weight: 700; color: var(--accent-green); min-width: 15vh;"></div>
+
+            <div class="header-progress" style="flex: 1; margin: 0 5vh;">
                 <div style="font-size: 2vh; color: var(--text-dim);" id="percent">0% ohi</div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress"></div>
                 </div>
             </div>
+
+            <div class="header-date" id="date"
+                style="font-size: 3.2vh; font-weight: 700; text-align: right; min-width: 20vh;"></div>
         </header>
 
         <main class="menu-area">
@@ -354,18 +596,131 @@
     </div>
 
     <script>
-        const START_DATE = new Date('2026-01-05T00:00:00');
-        const END_DATE = new Date('2026-09-16T00:00:00');
+        let currentBatch = null;
+        const BATCHES = [];
+
+        function getFirstMonday(year, month) {
+            let d = new Date(year, month, 1);
+            while (d.getDay() !== 1) {
+                d.setDate(d.getDate() + 1);
+            }
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        function initBatches() {
+            const startYear = 2026;
+            for (let y = startYear; y < startYear + 5; y++) {
+                // 1/xx
+                const s1 = getFirstMonday(y, 0);
+                const e1 = new Date(s1.getTime() + 254 * 24 * 60 * 60 * 1000);
+                BATCHES.push({ id: `1/${y.toString().slice(-2)}`, start: s1, end: e1 });
+
+                // 2/xx
+                const s2 = getFirstMonday(y, 6);
+                const e2 = new Date(s2.getTime() + 254 * 24 * 60 * 60 * 1000);
+                BATCHES.push({ id: `2/${y.toString().slice(-2)}`, start: s2, end: e2 });
+            }
+
+            // Load from storage or default
+            const saved = localStorage.getItem('selectedBatch');
+            currentBatch = BATCHES.find(b => b.id === saved) || BATCHES[0];
+            updateHeaderBatch();
+
+            populateBatchGrid();
+        }
+
+        function updateHeaderBatch() {
+            const el = document.getElementById('header-batch');
+            if (el && currentBatch) {
+                el.textContent = `${currentBatch.id}`;
+            }
+        }
+
+        function populateBatchGrid() {
+            const grid = document.getElementById('batch-grid');
+            grid.innerHTML = '';
+            BATCHES.forEach(batch => {
+                const item = document.createElement('div');
+                item.className = 'batch-item' + (currentBatch.id === batch.id ? ' active' : '');
+                item.textContent = batch.id;
+                item.onclick = () => selectBatch(batch.id);
+                grid.appendChild(item);
+            });
+        }
+
+        function selectBatch(id) {
+            currentBatch = BATCHES.find(b => b.id === id);
+            localStorage.setItem('selectedBatch', id);
+            updateHeaderBatch();
+            closeModal();
+            updateTime();
+            populateBatchGrid();
+        }
+
+        function openModal() {
+            document.getElementById('batch-modal').style.display = 'flex';
+        }
+
+        function closeModal(e) {
+            document.getElementById('batch-modal').style.display = 'none';
+        }
+
+        function openMessageModal() {
+            document.getElementById('message-modal').style.display = 'flex';
+            document.getElementById('fun-input').focus();
+        }
+
+        function closeMessageModal() {
+            document.getElementById('message-modal').style.display = 'none';
+        }
+
+        function openAuthorModal() {
+            document.getElementById('author-modal').style.display = 'flex';
+        }
+
+        function closeAuthorModal() {
+            document.getElementById('author-modal').style.display = 'none';
+        }
+
+        function updateTicker() {
+            const input = document.getElementById('fun-input').value;
+            const wrap = document.getElementById('ticker-wrap');
+            const text = document.getElementById('ticker-text');
+
+            if (input.trim()) {
+                text.textContent = input;
+                wrap.style.display = 'block';
+                localStorage.setItem('funMessage', input);
+            } else {
+                wrap.style.display = 'none';
+                localStorage.removeItem('funMessage');
+            }
+        }
+
+        function initMessage() {
+            const saved = localStorage.getItem('funMessage');
+            if (saved) {
+                document.getElementById('fun-input').value = saved;
+                updateTicker();
+            }
+        }
 
         function updateTime() {
+            if (!currentBatch) return;
             const now = new Date();
+            const START_DATE = currentBatch.start;
+            const END_DATE = currentBatch.end;
 
             // Date
             document.getElementById('date').textContent = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
 
             // TJ
             const diff = END_DATE - now;
-            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            let days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+            if (days < 0) days = 0;
+
             document.getElementById('tj-sidebar').textContent = days;
 
             // Progress
@@ -376,11 +731,12 @@
             document.getElementById('progress').style.width = `${percent}%`;
 
             // Footer Countdown
-            const s = Math.floor(diff / 1000);
+            const diffMs = Math.max(0, diff);
+            const s = Math.floor(diffMs / 1000);
             const m = Math.floor(s / 60);
-            const h = diff / (1000 * 60 * 60);
-            const w = diff / (1000 * 60 * 60 * 24 * 7);
-            const mo = diff / (1000 * 60 * 60 * 24 * 30.44);
+            const h = diffMs / (1000 * 60 * 60);
+            const w = diffMs / (1000 * 60 * 60 * 24 * 7);
+            const mo = diffMs / (1000 * 60 * 60 * 24 * 30.44);
 
             document.getElementById('countdown').textContent =
                 `${mo.toFixed(1)} kk — ${w.toFixed(1)} vko — ${h.toFixed(1)} h — ${m} min — ${s} s`;
@@ -419,8 +775,11 @@
                 const json = await res.json();
                 if (json.data && !json.data.error) {
                     const idx = (new Date().getDay() + 6) % 7;
-                    document.getElementById('conscript-list').innerHTML = formatList(json.data.conscript_menu[idx]);
-                    document.getElementById('staff-list').innerHTML = formatList(json.data.staff_menu[idx]);
+                    const conscriptMenu = json.data.conscript_menu[idx];
+                    const staffMenu = json.data.staff_menu[idx];
+
+                    document.getElementById('conscript-list').innerHTML = formatList(conscriptMenu);
+                    document.getElementById('staff-list').innerHTML = formatList(staffMenu);
                 }
             } catch (e) {
                 console.error(e);
@@ -451,6 +810,8 @@
         setInterval(updateTime, 1000);
         setInterval(refresh, 1800000);
         setInterval(fetchWeather, 1800000);
+        initBatches();
+        initMessage();
         updateTime();
         refresh();
         fetchWeather();
