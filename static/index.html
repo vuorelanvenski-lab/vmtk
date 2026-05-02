@@ -807,11 +807,22 @@
             } catch (e) { console.error(e); }
         }
 
+        function scheduleReload() {
+            const now = new Date();
+            const nextReload = new Date();
+            nextReload.setDate(now.getDate() + 1);
+            nextReload.setHours(0, 1, 0, 0); // Reload at 00:01
+
+            const diff = nextReload - now;
+            setTimeout(() => window.location.reload(), diff);
+        }
+
         setInterval(updateTime, 1000);
         setInterval(refresh, 1800000);
         setInterval(fetchWeather, 1800000);
         initBatches();
         initMessage();
+        scheduleReload();
         updateTime();
         refresh();
         fetchWeather();
