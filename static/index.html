@@ -64,7 +64,7 @@
             flex-direction: column;
             align-items: center;
             gap: 2vh;
-            border: 1px solid rgba(22, 163, 74, 0.3);
+            border: 1px solid #222;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
@@ -85,7 +85,6 @@
         .weather-icon {
             font-size: 6vh;
             color: #fff;
-            filter: drop-shadow(0 0 10px var(--accent-green));
         }
 
         .weather-temp {
@@ -132,7 +131,6 @@
             font-weight: 700;
             color: #fff;
             line-height: 1;
-            text-shadow: 0 0 30px rgba(22, 163, 74, 0.5);
         }
 
         .tj-sidebar-batch {
@@ -288,11 +286,11 @@
         .footer-bar {
             background-color: var(--card-bg);
             border-radius: 20px;
-            padding: 2vh;
-            text-align: center;
-            font-size: 1.5vh;
-            color: var(--text-dim);
-            font-weight: 500;
+            padding: 2.5vh 4vh;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vh;
+            border: 1px solid #222;
         }
 
         /* Custom Scrollbar */
@@ -370,55 +368,59 @@
             box-shadow: 0 0 20px rgba(22, 163, 74, 0.5);
         }
 
-        #tj-sidebar {
+        #header-batch {
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 1vh;
+            user-select: none;
         }
 
-        #tj-sidebar:hover {
-            transform: scale(1.1);
-            text-shadow: 0 0 40px rgba(22, 163, 74, 0.8);
+        #header-batch:hover {
+            transform: scale(1.05);
         }
 
         /* Fun Sentence Ticker */
         .ticker-wrap {
             width: 100%;
-            background: transparent;
-            padding: 1.5vh 0;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.2vh 2.5vh;
+            display: none;
+            align-items: center;
+            gap: 2vh;
+            border: 1px solid #222;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+
+        .ticker-content {
+            flex: 1;
             overflow: hidden;
             white-space: nowrap;
-            display: none;
-            margin-top: auto;
+            display: flex;
+            align-items: center;
         }
 
         .ticker {
             display: inline-block;
-            font-size: 3vh;
-            font-weight: 700;
-            color: #fff;
-            text-transform: uppercase;
+            font-size: 2vh;
+            font-weight: 500;
+            color: var(--text-main);
             padding-left: 100%;
-            animation: ticker-animation 10s linear infinite, rainbow-glow 5s linear infinite, floating 2s ease-in-out infinite alternate;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: ticker-animation 15s linear infinite;
         }
 
         @keyframes ticker-animation {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
-        }
+            0% {
+                transform: translateX(0);
+            }
 
-        @keyframes rainbow-glow {
-            0% { color: #fff; text-shadow: 0 0 10px #ff0000; }
-            20% { color: #fff; text-shadow: 0 0 10px #ffff00; }
-            40% { color: #fff; text-shadow: 0 0 10px #00ff00; }
-            60% { color: #fff; text-shadow: 0 0 10px #00ffff; }
-            80% { color: #fff; text-shadow: 0 0 10px #0000ff; }
-            100% { color: #fff; text-shadow: 0 0 10px #ff00ff; }
-        }
-
-        @keyframes floating {
-            0% { margin-top: -0.5vh; }
-            100% { margin-top: 0.5vh; }
+            100% {
+                transform: translateX(-100%);
+            }
         }
 
         /* Message Input Modal */
@@ -441,50 +443,6 @@
             width: 100%;
             outline: none;
         }
-
-        /* Author Card Style */
-        .author-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2vh;
-            padding: 2vh;
-        }
-
-        .author-avatar {
-            width: 15vh;
-            height: 15vh;
-            background: linear-gradient(135deg, var(--accent-green), #064e3b);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 6vh;
-            color: #fff;
-            box-shadow: 0 0 20px rgba(22, 163, 74, 0.4);
-        }
-
-        .author-name {
-            font-size: 3vh;
-            font-weight: 700;
-            color: var(--accent-green);
-        }
-
-        .author-info {
-            font-size: 1.8vh;
-            color: var(--text-dim);
-            line-height: 1.6;
-        }
-
-        .weather-box {
-            cursor: pointer;
-            transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-
-        .weather-box:hover {
-            transform: scale(1.02);
-            border-color: var(--accent-green);
-        }
     </style>
 </head>
 
@@ -495,10 +453,10 @@
 
         <div class="tj-sidebar-box">
             <div class="tj-sidebar-label">TJ</div>
-            <div class="tj-sidebar-value" id="tj-sidebar" onclick="openModal()">--</div>
+            <div class="tj-sidebar-value" id="tj-sidebar">--</div>
         </div>
 
-        <div class="weather-box" id="weather-widget" style="display: none;" onclick="openAuthorModal()">
+        <div class="weather-box" id="weather-widget" style="display: none;">
             <div class="weather-title">Kajaani</div>
             <div class="weather-main">
                 <i class="fas fa-cloud-sun weather-icon" id="w-icon"></i>
@@ -514,10 +472,6 @@
             </div>
         </div>
 
-        <!-- Ticker inside sidebar -->
-        <div class="ticker-wrap" id="ticker-wrap">
-            <div class="ticker" id="ticker-text"></div>
-        </div>
     </aside>
 
     <!-- Batch Selection Modal -->
@@ -532,7 +486,7 @@
 
     <div id="message-modal" class="modal-overlay" onclick="closeMessageModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-title">Mujautus lause</div>
+            <div class="modal-title">Liikkuva teksti</div>
             <input type="text" id="fun-input" placeholder="Kirjoita jotain hauskaa..." oninput="updateTicker()">
             <button onclick="closeMessageModal()"
                 style="margin-top: 3vh; background: var(--accent-green); color: #000; border: none; padding: 1.5vh 4vh; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 2vh;">OK</button>
@@ -540,44 +494,30 @@
         </div>
     </div>
 
-    <!-- Author Modal -->
-    <div id="author-modal" class="modal-overlay" onclick="closeAuthorModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-title">Tekijä</div>
-            <div class="author-card">
-                <div class="author-avatar">
-                    <i class="fas fa-user-ninja"></i>
-                </div>
-                <div class="author-name">Jääk Vuorela 1/26</div>
-                <div class="author-info">
-                    Jos sivua pitää päivittää/korjata<br>
-                    ota minuun yhteys instagramissa VMTK:n tililtä<br>
-                    @vuorelaverneri
-                </div>
-                <button onclick="closeAuthorModal()"
-                    style="margin-top: 2vh; background: #333; color: #fff; border: 1px solid #444; padding: 1vh 3vh; border-radius: 10px; font-weight: 500; cursor: pointer;">Sulje</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Ticker was here, now moved to sidebar -->
 
     <!-- Main Content -->
     <div class="content">
         <header class="top-bar">
-            <div id="header-batch"
-                style="font-size: 3.2vh; font-weight: 700; color: var(--accent-green); min-width: 15vh;"></div>
-
-            <div class="header-progress" style="flex: 1; margin: 0 5vh;">
-                <div style="font-size: 2vh; color: var(--text-dim);" id="percent">0% ohi</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress"></div>
-                </div>
+            <div style="display: flex; align-items: center; gap: 2vh; min-width: 20vh;">
+                <div id="header-clock" style="font-size: 3.2vh; font-weight: 700; color: #fff;"></div>
             </div>
+
+            <div id="header-batch" onclick="openModal()"
+                style="font-size: 3.2vh; font-weight: 700; color: var(--accent-green); text-align: center; cursor: pointer;"></div>
 
             <div class="header-date" id="date"
                 style="font-size: 3.2vh; font-weight: 700; text-align: right; min-width: 20vh;"></div>
         </header>
+
+        <!-- Announcement/Ticker Bar -->
+        <div class="ticker-wrap" id="ticker-wrap">
+            <div class="ticker-content">
+                <div class="ticker" id="ticker-text"></div>
+            </div>
+        </div>
 
         <main class="menu-area">
             <div class="menu-column">
@@ -590,8 +530,14 @@
             </div>
         </main>
 
-        <footer class="footer-bar" id="countdown">
-            Ladataan laskuria...
+        <footer class="footer-bar">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.8vh; font-weight: 500;">
+                <span id="percent" style="color: var(--text-dim);">0% ohi</span>
+                <span id="countdown" style="color: var(--text-dim);">Ladataan laskuria...</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
         </footer>
     </div>
 
@@ -675,13 +621,7 @@
             document.getElementById('message-modal').style.display = 'none';
         }
 
-        function openAuthorModal() {
-            document.getElementById('author-modal').style.display = 'flex';
-        }
 
-        function closeAuthorModal() {
-            document.getElementById('author-modal').style.display = 'none';
-        }
 
         function updateTicker() {
             const input = document.getElementById('fun-input').value;
@@ -690,7 +630,7 @@
 
             if (input.trim()) {
                 text.textContent = input;
-                wrap.style.display = 'block';
+                wrap.style.display = 'flex';
                 localStorage.setItem('funMessage', input);
             } else {
                 wrap.style.display = 'none';
@@ -712,8 +652,15 @@
             const START_DATE = currentBatch.start;
             const END_DATE = currentBatch.end;
 
-            // Date
-            document.getElementById('date').textContent = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
+            // Date & Clock (24h)
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
+            document.getElementById('date').textContent = dateStr;
+            const elClock = document.getElementById('header-clock');
+            if (elClock) {
+                elClock.textContent = `${hours}:${minutes}`;
+            }
 
             // TJ
             const diff = END_DATE - now;
