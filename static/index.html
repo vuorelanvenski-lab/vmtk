@@ -26,12 +26,20 @@
 
         body {
             font-family: 'Rubik', sans-serif;
-            background-color: var(--bg-color);
+            background-color: #ffffff;
+            background-image: url('/static/vmtk.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
             color: var(--text-main);
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            display: flex;
+            display: block;
+        }
+        
+        body > * {
+            display: none !important;
         }
 
         /* Sidebar - Large Logo */
@@ -541,7 +549,8 @@
         </footer>
     </div>
 
-    <script>
+    <!-- Script disabled -->
+    <script type="text/plain">
         let currentBatch = null;
         const BATCHES = [];
 
