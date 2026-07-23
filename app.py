@@ -6,7 +6,7 @@ import requests
 import os
 import base64
 import time
-from vercel.blob import put, list_objects
+from vercel.blob import put, list_objects, delete
 from scraper import fetch_foodlist
 
 app = FastAPI(title="Foodlist API", description="API to fetch scraped food lists.")
@@ -44,18 +44,39 @@ def save_canvas(data: CanvasData):
         
         token = os.environ.get("BLOB_READ_WRITE_TOKEN")
         if token:
+            # 1. Find existing blobs to delete later
+            old_urls = []
+            try:
+                res_list = list_objects(token=token)
+                blobs = getattr(res_list, 'blobs', getattr(res_list, 'get', lambda x, y: [])('blobs', []))
+                for b in blobs:
+                    pathname = getattr(b, 'pathname', getattr(b, 'get', lambda x,y: '')('pathname', ''))
+                    if "saved_canvas" in pathname:
+                        old_urls.append(getattr(b, 'url', getattr(b, 'get', lambda x,y: '')('url', '')))
+            except Exception as e:
+                print(f"Error listing old blobs: {e}")
+
+            # 2. Upload new blob with a completely unique URL
             res = put(
                 "saved_canvas.png",
                 image_bytes,
                 access="public",
-                add_random_suffix=False,
-                overwrite=True,
+                add_random_suffix=True,
                 token=token
             )
             url = getattr(res, 'url', None)
             if not url and hasattr(res, 'get'):
                 url = res.get('url')
             canvas_store["url"] = url
+            
+            # 3. Delete old blobs so we don't waste storage space
+            if url:
+                for old_url in old_urls:
+                    if old_url and old_url != url:
+                        try:
+                            delete(old_url, token=token)
+                        except Exception:
+                            pass
         else:
             canvas_store["image_bytes"] = image_bytes
             canvas_store["url"] = None
@@ -79,10 +100,13 @@ def get_canvas_image():
                 res = list_objects(token=token)
                 blobs = getattr(res, 'blobs', getattr(res, 'get', lambda x, y: [])('blobs', []))
                 
+                blobs_list = list(blobs)
+                blobs_list.sort(key=lambda x: str(getattr(x, 'uploaded_at', getattr(x, 'get', lambda k, v: '')('uploadedAt', ''))), reverse=True)
+                
                 found_url = None
-                for b in blobs:
+                for b in blobs_list:
                     pathname = getattr(b, 'pathname', getattr(b, 'get', lambda x,y: '')('pathname', ''))
-                    if pathname == "saved_canvas.png":
+                    if "saved_canvas" in pathname:
                         found_url = getattr(b, 'url', getattr(b, 'get', lambda x,y: '')('url', ''))
                         break
                         
