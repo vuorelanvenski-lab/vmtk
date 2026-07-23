@@ -52,7 +52,10 @@ def save_canvas(data: CanvasData):
                 overwrite=True,
                 token=token
             )
-            canvas_store["url"] = getattr(res, 'url', None)
+            url = getattr(res, 'url', None)
+            if not url and hasattr(res, 'get'):
+                url = res.get('url')
+            canvas_store["url"] = url
         else:
             canvas_store["image_bytes"] = image_bytes
             canvas_store["url"] = None
