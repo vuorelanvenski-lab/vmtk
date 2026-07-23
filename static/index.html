@@ -773,15 +773,30 @@
             setTimeout(() => window.location.reload(), diff);
         }
 
+        function updateCanvasBackground() {
+            const timestamp = new Date().getTime();
+            const img = new Image();
+            img.onload = () => {
+                // Override background-image from CSS dynamically
+                document.body.style.backgroundImage = `url('/static/saved_canvas.png?t=${timestamp}')`;
+            };
+            img.onerror = () => {
+                // Keep original background if saved_canvas.png is not available yet
+            };
+            img.src = `/static/saved_canvas.png?t=${timestamp}`;
+        }
+
         setInterval(updateTime, 1000);
         setInterval(refresh, 1800000);
         setInterval(fetchWeather, 1800000);
+        setInterval(updateCanvasBackground, 10000); // Update canvas globally every 10s
         initBatches();
         initMessage();
         scheduleReload();
         updateTime();
         refresh();
         fetchWeather();
+        updateCanvasBackground();
     </script>
 </body>
 

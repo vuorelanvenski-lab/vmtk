@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMTK Canvas Admin</title>
+    <link rel="icon" type="image/svg+xml" href="/static/kh.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #111111;
+            --accent-green: #16a34a;
+            --military-green: #0f2b16;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2vh;
+            background: var(--card-bg);
+            padding: 2vh 4vh;
+            border-radius: 20px;
+            border: 1px solid #222;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: var(--accent-green);
+            font-size: 3vh;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 2vh;
+            align-items: center;
+        }
+
+        .tool-btn {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 1vh 2vh;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.8vh;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1vh;
+        }
+
+        .tool-btn:hover {
+            background: #333;
+            border-color: var(--accent-green);
+        }
+
+        .tool-btn.active {
+            background: rgba(22, 163, 74, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .btn-save {
+            background: var(--accent-green);
+            color: #000;
+            border: none;
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(22, 163, 74, 0.3);
+        }
+
+        .btn-save:hover {
+            background: #15803d;
+            box-shadow: 0 0 20px rgba(22, 163, 74, 0.5);
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 4vh;
+            height: 4vh;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 0;
+            background: none;
+        }
+        
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        input[type="color"]::-webkit-color-swatch {
+            border: 2px solid #444;
+            border-radius: 5px;
+        }
+
+        input[type="range"] {
+            accent-color: var(--accent-green);
+        }
+
+        .canvas-container {
+            width: 100%;
+            max-width: 1200px;
+            flex: 1;
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #333;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        canvas {
+            cursor: crosshair;
+            background-color: transparent; /* allow custom backgrounds if needed */
+        }
+        
+        #status-msg {
+            position: fixed;
+            bottom: 3vh;
+            right: 3vh;
+            background: var(--accent-green);
+            color: #000;
+            padding: 1.5vh 3vh;
+            border-radius: 10px;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        #status-msg.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Canvas Admin</h1>
+        <div class="toolbar">
+            <input type="color" id="color-picker" value="#000000" title="Valitse väri">
+            <input type="range" id="brush-size" min="1" max="50" value="5" title="Siveltimen koko">
+            <button class="tool-btn active" id="btn-draw"><i class="fas fa-pen"></i> Piirrä</button>
+            <button class="tool-btn" id="btn-erase"><i class="fas fa-eraser"></i> Kumi</button>
+            <button class="tool-btn" id="btn-clear"><i class="fas fa-trash"></i> Tyhjennä</button>
+            <button class="tool-btn btn-save" id="btn-save"><i class="fas fa-save"></i> Tallenna</button>
+        </div>
+    </header>
+
+    <div class="canvas-container" id="canvas-wrapper">
+        <canvas id="main-canvas"></canvas>
+    </div>
+    
+    <div id="status-msg">Tallennettu!</div>
+
+    <script>
+        const canvas = document.getElementById('main-canvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('canvas-wrapper');
+        
+        let isDrawing = false;
+        let isErasing = false;
+        
+        // Match canvas logical size to container aspect ratio
+        function resizeCanvas() {
+            // Let's set a fixed resolution to make saving consistent, e.g. 1920x1080
+            // and scale it down via CSS if needed, or just match wrapper size.
+            // For a background image, maybe 1920x1080 is good.
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            if(canvas.width > 0) tempCtx.drawImage(canvas, 0, 0);
+
+            // We'll use a fixed virtual resolution for high quality, 
+            // scaled to fit the wrapper
+            canvas.width = 1920;
+            canvas.height = 1080;
+            
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.objectFit = 'contain';
+            
+            // Restore content after resize
+            if(tempCanvas.width > 0) {
+                ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
+            } else {
+                // Initial fill with transparent or white? Let's leave transparent
+                // so it can overlay or be just white. Let's make it clear.
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        
+        window.addEventListener('resize', () => {
+            // We don't resize logical canvas on window resize, just CSS handles it
+        });
+        
+        resizeCanvas();
+
+        // Get coordinates relative to the fixed 1920x1080 canvas size
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Calculate scale
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function startPosition(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const pos = getCoordinates(e);
+            
+            ctx.lineWidth = document.getElementById('brush-size').value;
+            ctx.lineCap = 'round';
+            
+            if (isErasing) {
+                ctx.globalCompositeOperation = "destination-out";
+            } else {
+                ctx.globalCompositeOperation = "source-over";
+                ctx.strokeStyle = document.getElementById('color-picker').value;
+            }
+
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseleave', endPosition);
+        
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            startPosition(touch);
+        }, {passive: false});
+        
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            draw(touch);
+        }, {passive: false});
+
+        // Tools
+        const btnDraw = document.getElementById('btn-draw');
+        const btnErase = document.getElementById('btn-erase');
+
+        btnDraw.addEventListener('click', () => {
+            isErasing = false;
+            btnDraw.classList.add('active');
+            btnErase.classList.remove('active');
+        });
+
+        btnErase.addEventListener('click', () => {
+            isErasing = true;
+            btnErase.classList.add('active');
+            btnDraw.classList.remove('active');
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            if (confirm('Oletko varma, että haluat tyhjentää kankaan?')) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        });
+
+        document.getElementById('btn-save').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-save');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Tallennetaan...';
+            btn.disabled = true;
+            
+            try {
+                // If the user wants a solid background instead of transparent, 
+                // we could composite it here, but let's just save as PNG.
+                const dataUrl = canvas.toDataURL('image/png');
+                
+                const res = await fetch('/api/canvas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_data: dataUrl })
+                });
+                
+                if (res.ok) {
+                    showStatus('Tallennettu onnistuneesti!');
+                } else {
+                    showStatus('Virhe tallennuksessa!');
+                }
+            } catch (e) {
+                console.error(e);
+                showStatus('Virhe yhteysessä!');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-save"></i> Tallenna';
+                btn.disabled = false;
+            }
+        });
+        
+        function showStatus(msg) {
+            const statusEl = document.getElementById('status-msg');
+            statusEl.textContent = msg;
+            statusEl.classList.add('show');
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
