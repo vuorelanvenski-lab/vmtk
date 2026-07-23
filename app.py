@@ -31,11 +31,17 @@ def save_canvas(data: CanvasData):
         else:
             encoded = data.image_data
             
+        encoded = encoded.strip()
+        padding = len(encoded) % 4
+        if padding > 0:
+            encoded += "=" * (4 - padding)
+            
         image_bytes = base64.b64decode(encoded)
         with open("static/saved_canvas.png", "wb") as f:
             f.write(image_bytes)
         return {"status": "success"}
     except Exception as e:
+        print(f"Canvas save error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/foodlist")
