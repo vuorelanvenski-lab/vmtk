@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, Response, RedirectResponse
 from pydantic import BaseModel
+import requests
 import os
 import base64
 from scraper import fetch_foodlist
@@ -22,12 +23,11 @@ class CanvasData(BaseModel):
 def get_canvas_page():
     return FileResponse("static/canvas.html")
 
-canvas_store = {"image_bytes": None}
+canvas_store = {"image_bytes": None, "url": None}
 
 @app.post("/api/canvas")
 def save_canvas(data: CanvasData):
     try:
-        # data.image_data looks like "data:image/png;base64,iVBORw0KGgo..."
         if "," in data.image_data:
             header, encoded = data.image_data.split(",", 1)
         else:
@@ -39,7 +39,26 @@ def save_canvas(data: CanvasData):
             encoded += "=" * (4 - padding)
             
         image_bytes = base64.b64decode(encoded)
-        canvas_store["image_bytes"] = image_bytes
+        
+        token = os.environ.get("BLOB_READ_WRITE_TOKEN")
+        if token:
+            headers = {
+                "authorization": f"Bearer {token}",
+                "x-api-version": "7"
+            }
+            # Upload to Vercel Blob
+            res = requests.put(
+                "https://blob.vercel-storage.com/saved_canvas.png",
+                data=image_bytes,
+                headers=headers
+            )
+            res.raise_for_status()
+            res_data = res.json()
+            canvas_store["url"] = res_data.get("url")
+        else:
+            canvas_store["image_bytes"] = image_bytes
+            canvas_store["url"] = None
+            
         return {"status": "success"}
     except Exception as e:
         print(f"Canvas save error: {e}")
@@ -47,8 +66,32 @@ def save_canvas(data: CanvasData):
 
 @app.get("/api/canvas_image")
 def get_canvas_image():
+    if canvas_store.get("url"):
+        return RedirectResponse(url=canvas_store["url"])
+        
+    token = os.environ.get("BLOB_READ_WRITE_TOKEN")
+    if token:
+        try:
+            headers = {
+                "authorization": f"Bearer {token}",
+                "x-api-version": "7"
+            }
+            res = requests.get("https://blob.vercel-storage.com", headers=headers)
+            res.raise_for_status()
+            blobs = res.json().get("blobs", [])
+            
+            # Sort by uploadedAt descending to get the latest
+            blobs.sort(key=lambda x: x.get("uploadedAt", ""), reverse=True)
+            for b in blobs:
+                if "saved_canvas" in b.get("pathname", ""):
+                    canvas_store["url"] = b.get("url")
+                    return RedirectResponse(url=canvas_store["url"])
+        except Exception as e:
+            print(f"Vercel Blob list error: {e}")
+
     if canvas_store.get("image_bytes"):
         return Response(content=canvas_store["image_bytes"], media_type="image/png")
+        
     raise HTTPException(status_code=404, detail="No canvas image saved")
 
 @app.get("/api/foodlist")
