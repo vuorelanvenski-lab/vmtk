@@ -173,6 +173,7 @@
             <input type="color" id="color-picker" value="#000000" title="Valitse väri">
             <input type="range" id="brush-size" min="1" max="50" value="5" title="Siveltimen koko">
             <button class="tool-btn active" id="btn-draw"><i class="fas fa-pen"></i> Piirrä</button>
+            <button class="tool-btn" id="btn-fill"><i class="fas fa-fill-drip"></i> Täyttö</button>
             <button class="tool-btn" id="btn-erase"><i class="fas fa-eraser"></i> Kumi</button>
             <button class="tool-btn" id="btn-clear"><i class="fas fa-trash"></i> Tyhjennä</button>
             <button class="tool-btn btn-save" id="btn-save"><i class="fas fa-save"></i> Tallenna</button>
@@ -192,20 +193,66 @@
         
         let isDrawing = false;
         let isErasing = false;
+        let isFilling = false;
         
+        // Undo / Redo
+        let history = [];
+        let historyStep = -1;
+
+        function saveState() {
+            historyStep++;
+            if (historyStep < history.length) {
+                history.length = historyStep;
+            }
+            history.push(canvas.toDataURL('image/png'));
+            if(history.length > 30) {
+                history.shift();
+                historyStep--;
+            }
+        }
+
+        function undo() {
+            if (historyStep > 0) {
+                historyStep--;
+                restoreState();
+            }
+        }
+
+        function redo() {
+            if (historyStep < history.length - 1) {
+                historyStep++;
+                restoreState();
+            }
+        }
+
+        function restoreState() {
+            const img = new Image();
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = "source-over";
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = history[historyStep];
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            } else if (e.ctrlKey && e.key === 'y') {
+                e.preventDefault();
+                redo();
+            }
+        });
+
         // Match canvas logical size to container aspect ratio
         function resizeCanvas() {
-            // Let's set a fixed resolution to make saving consistent, e.g. 1920x1080
-            // and scale it down via CSS if needed, or just match wrapper size.
-            // For a background image, maybe 1920x1080 is good.
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
             if(canvas.width > 0) tempCtx.drawImage(canvas, 0, 0);
 
-            // We'll use a fixed virtual resolution for high quality, 
-            // scaled to fit the wrapper
             canvas.width = 1920;
             canvas.height = 1080;
             
@@ -213,26 +260,20 @@
             canvas.style.height = '100%';
             canvas.style.objectFit = 'contain';
             
-            // Restore content after resize
             if(tempCanvas.width > 0) {
                 ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
             } else {
-                // Initial fill with transparent or white? Let's leave transparent
-                // so it can overlay or be just white. Let's make it clear.
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         }
         
-        window.addEventListener('resize', () => {
-            // We don't resize logical canvas on window resize, just CSS handles it
-        });
-        
         resizeCanvas();
+        // Initial state
+        setTimeout(() => saveState(), 100);
 
         // Get coordinates relative to the fixed 1920x1080 canvas size
         function getCoordinates(e) {
             const rect = canvas.getBoundingClientRect();
-            // Calculate scale
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             
@@ -242,18 +283,105 @@
             };
         }
 
+        // --- Flood Fill Algorithm ---
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+                a: 255
+            } : null;
+        }
+
+        function getPixelColor(data, x, y) {
+            const pos = (y * canvas.width + x) * 4;
+            return {
+                r: data[pos],
+                g: data[pos + 1],
+                b: data[pos + 2],
+                a: data[pos + 3]
+            };
+        }
+        
+        function setPixelColor(data, x, y, c) {
+            const pos = (y * canvas.width + x) * 4;
+            data[pos] = c.r;
+            data[pos+1] = c.g;
+            data[pos+2] = c.b;
+            data[pos+3] = c.a;
+        }
+
+        function colorMatch(c1, c2, tolerance = 15) {
+            if (c1.a === 0 && c2.a === 0) return true; // Both transparent
+            return Math.abs(c1.r - c2.r) <= tolerance &&
+                   Math.abs(c1.g - c2.g) <= tolerance &&
+                   Math.abs(c1.b - c2.b) <= tolerance &&
+                   Math.abs(c1.a - c2.a) <= tolerance;
+        }
+
+        function floodFill(x, y, fillColorHex) {
+            x = Math.floor(x);
+            y = Math.floor(y);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            const startColor = getPixelColor(data, x, y);
+            const fillColor = hexToRgb(fillColorHex);
+            
+            if (colorMatch(startColor, fillColor, 0)) return;
+
+            const stack = [[x, y]];
+            
+            while(stack.length) {
+                let [cx, cy] = stack.pop();
+                let x1 = cx;
+                while(x1 >= 0 && colorMatch(getPixelColor(data, x1, cy), startColor)) x1--;
+                x1++;
+                let spanAbove = false, spanBelow = false;
+                while(x1 < w && colorMatch(getPixelColor(data, x1, cy), startColor)) {
+                    setPixelColor(data, x1, cy, fillColor);
+                    if(!spanAbove && cy > 0 && colorMatch(getPixelColor(data, x1, cy - 1), startColor)) {
+                        stack.push([x1, cy - 1]);
+                        spanAbove = true;
+                    } else if(spanAbove && cy > 0 && !colorMatch(getPixelColor(data, x1, cy - 1), startColor)) {
+                        spanAbove = false;
+                    }
+                    if(!spanBelow && cy < h - 1 && colorMatch(getPixelColor(data, x1, cy + 1), startColor)) {
+                        stack.push([x1, cy + 1]);
+                        spanBelow = true;
+                    } else if(spanBelow && cy < h - 1 && !colorMatch(getPixelColor(data, x1, cy + 1), startColor)) {
+                        spanBelow = false;
+                    }
+                    x1++;
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+            saveState();
+        }
+
         function startPosition(e) {
+            const pos = getCoordinates(e);
+            if (isFilling) {
+                floodFill(pos.x, pos.y, document.getElementById('color-picker').value);
+                return;
+            }
             isDrawing = true;
             draw(e);
         }
 
         function endPosition() {
-            isDrawing = false;
-            ctx.beginPath();
+            if (isDrawing) {
+                isDrawing = false;
+                ctx.beginPath();
+                saveState();
+            }
         }
 
         function draw(e) {
-            if (!isDrawing) return;
+            if (!isDrawing || isFilling) return;
             
             const pos = getCoordinates(e);
             
@@ -278,6 +406,19 @@
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseleave', endPosition);
         
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const brushSizeInput = document.getElementById('brush-size');
+            let size = parseInt(brushSizeInput.value);
+            if (e.deltaY < 0) {
+                size += 2;
+            } else {
+                size -= 2;
+            }
+            size = Math.max(1, Math.min(50, size));
+            brushSizeInput.value = size;
+        });
+        
         // Touch support
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -294,23 +435,37 @@
 
         // Tools
         const btnDraw = document.getElementById('btn-draw');
+        const btnFill = document.getElementById('btn-fill');
         const btnErase = document.getElementById('btn-erase');
 
         btnDraw.addEventListener('click', () => {
             isErasing = false;
+            isFilling = false;
             btnDraw.classList.add('active');
+            btnFill.classList.remove('active');
+            btnErase.classList.remove('active');
+        });
+
+        btnFill.addEventListener('click', () => {
+            isErasing = false;
+            isFilling = true;
+            btnFill.classList.add('active');
+            btnDraw.classList.remove('active');
             btnErase.classList.remove('active');
         });
 
         btnErase.addEventListener('click', () => {
             isErasing = true;
+            isFilling = false;
             btnErase.classList.add('active');
             btnDraw.classList.remove('active');
+            btnFill.classList.remove('active');
         });
 
         document.getElementById('btn-clear').addEventListener('click', () => {
             if (confirm('Oletko varma, että haluat tyhjentää kankaan?')) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                saveState();
             }
         });
 
@@ -320,8 +475,6 @@
             btn.disabled = true;
             
             try {
-                // If the user wants a solid background instead of transparent, 
-                // we could composite it here, but let's just save as PNG.
                 const dataUrl = canvas.toDataURL('image/png');
                 
                 const res = await fetch('/api/canvas', {
