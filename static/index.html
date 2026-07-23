@@ -777,12 +777,12 @@
             const img = new Image();
             img.onload = () => {
                 // Override background-image from CSS dynamically
-                document.body.style.backgroundImage = `url('/static/saved_canvas.png?t=${timestamp}')`;
+                document.body.style.backgroundImage = `url('/api/canvas_image?t=${timestamp}')`;
             };
             img.onerror = () => {
                 // Keep original background if saved_canvas.png is not available yet
             };
-            img.src = `/static/saved_canvas.png?t=${timestamp}`;
+            img.src = `/api/canvas_image?t=${timestamp}`;
         }
 
         setInterval(updateTime, 1000);

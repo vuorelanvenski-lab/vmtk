@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 import os
 import base64
@@ -22,6 +22,8 @@ class CanvasData(BaseModel):
 def get_canvas_page():
     return FileResponse("static/canvas.html")
 
+canvas_store = {"image_bytes": None}
+
 @app.post("/api/canvas")
 def save_canvas(data: CanvasData):
     try:
@@ -37,12 +39,17 @@ def save_canvas(data: CanvasData):
             encoded += "=" * (4 - padding)
             
         image_bytes = base64.b64decode(encoded)
-        with open("static/saved_canvas.png", "wb") as f:
-            f.write(image_bytes)
+        canvas_store["image_bytes"] = image_bytes
         return {"status": "success"}
     except Exception as e:
         print(f"Canvas save error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/canvas_image")
+def get_canvas_image():
+    if canvas_store.get("image_bytes"):
+        return Response(content=canvas_store["image_bytes"], media_type="image/png")
+    raise HTTPException(status_code=404, detail="No canvas image saved")
 
 @app.get("/api/foodlist")
 def get_foodlist():
