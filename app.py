@@ -100,6 +100,36 @@ def get_canvas_image():
         
     raise HTTPException(status_code=404, detail="No canvas image saved")
 
+@app.get("/api/debug_blob")
+def debug_blob():
+    token = os.environ.get("BLOB_READ_WRITE_TOKEN")
+    if not token:
+        return {"status": "error", "message": "BLOB_READ_WRITE_TOKEN is not set"}
+    
+    try:
+        res = list_objects(token=token)
+        blobs = getattr(res, 'blobs', getattr(res, 'get', lambda x, y: [])('blobs', []))
+        
+        blob_data = []
+        for b in blobs:
+            blob_data.append({
+                "pathname": getattr(b, 'pathname', getattr(b, 'get', lambda x,y: '')('pathname', '')),
+                "url": getattr(b, 'url', getattr(b, 'get', lambda x,y: '')('url', '')),
+                "uploadedAt": str(getattr(b, 'uploaded_at', getattr(b, 'get', lambda x,y: '')('uploadedAt', '')))
+            })
+            
+        return {
+            "status": "success", 
+            "token_starts_with": token[:10] + "..." if token else None,
+            "blobs": blob_data,
+            "canvas_store": {
+                "url": canvas_store.get("url"),
+                "has_bytes": "image_bytes" in canvas_store
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.get("/api/foodlist")
 def get_foodlist():
     """
