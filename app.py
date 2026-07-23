@@ -44,9 +44,11 @@ def save_canvas(data: CanvasData):
         if token:
             headers = {
                 "authorization": f"Bearer {token}",
-                "x-api-version": "7"
+                "x-api-version": "7",
+                "x-add-random-suffix": "0",
+                "x-allow-overwrite": "1"
             }
-            # Upload to Vercel Blob
+            # Upload to Vercel Blob and overwrite the exact file
             res = requests.put(
                 "https://blob.vercel-storage.com/saved_canvas.png",
                 data=image_bytes,
@@ -83,7 +85,8 @@ def get_canvas_image():
             # Sort by uploadedAt descending to get the latest
             blobs.sort(key=lambda x: x.get("uploadedAt", ""), reverse=True)
             for b in blobs:
-                if "saved_canvas" in b.get("pathname", ""):
+                # Require exact match since we disable random suffix now
+                if b.get("pathname") == "saved_canvas.png":
                     canvas_store["url"] = b.get("url")
                     return RedirectResponse(url=canvas_store["url"])
         except Exception as e:
