@@ -6,6 +6,7 @@ import requests
 import os
 import base64
 import time
+from vercel.blob import put, list_objects
 from scraper import fetch_foodlist
 
 app = FastAPI(title="Foodlist API", description="API to fetch scraped food lists.")
@@ -43,19 +44,15 @@ def save_canvas(data: CanvasData):
         
         token = os.environ.get("BLOB_READ_WRITE_TOKEN")
         if token:
-            headers = {
-                "authorization": f"Bearer {token}",
-                "x-api-version": "7"
-            }
-            # Upload to Vercel Blob
-            res = requests.put(
-                "https://blob.vercel-storage.com/saved_canvas.png",
-                data=image_bytes,
-                headers=headers
+            res = put(
+                "saved_canvas.png",
+                image_bytes,
+                access="public",
+                add_random_suffix=False,
+                overwrite=True,
+                token=token
             )
-            res.raise_for_status()
-            res_data = res.json()
-            canvas_store["url"] = res_data.get("url")
+            canvas_store["url"] = getattr(res, 'url', None)
         else:
             canvas_store["image_bytes"] = image_bytes
             canvas_store["url"] = None
@@ -76,21 +73,19 @@ def get_canvas_image():
         # Check for new blob URL at most once every 10 seconds
         if time.time() - canvas_store.get("last_fetch_time", 0) > 10:
             try:
-                headers = {
-                    "authorization": f"Bearer {token}",
-                    "x-api-version": "7"
-                }
-                res = requests.get("https://blob.vercel-storage.com", headers=headers)
-                res.raise_for_status()
-                blobs = res.json().get("blobs", [])
+                res = list_objects(token=token)
+                blobs = getattr(res, 'blobs', getattr(res, 'get', lambda x, y: [])('blobs', []))
                 
-                # Sort by uploadedAt descending to get the latest
-                blobs.sort(key=lambda x: x.get("uploadedAt", ""), reverse=True)
+                found_url = None
                 for b in blobs:
-                    if "saved_canvas" in b.get("pathname", ""):
-                        canvas_store["url"] = b.get("url")
+                    pathname = getattr(b, 'pathname', getattr(b, 'get', lambda x,y: '')('pathname', ''))
+                    if pathname == "saved_canvas.png":
+                        found_url = getattr(b, 'url', getattr(b, 'get', lambda x,y: '')('url', ''))
                         break
-                canvas_store["last_fetch_time"] = time.time()
+                        
+                if found_url:
+                    canvas_store["url"] = found_url
+                    canvas_store["last_fetch_time"] = time.time()
             except Exception as e:
                 print(f"Vercel Blob list error: {e}")
                 
