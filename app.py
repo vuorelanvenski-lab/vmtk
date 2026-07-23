@@ -93,7 +93,8 @@ def get_canvas_image():
                 print(f"Vercel Blob list error: {e}")
                 
         if canvas_store.get("url"):
-            return RedirectResponse(url=canvas_store["url"])
+            bust_url = f"{canvas_store['url']}?t={int(time.time())}"
+            return RedirectResponse(url=bust_url)
 
     if canvas_store.get("image_bytes"):
         return Response(content=canvas_store["image_bytes"], media_type="image/png")
