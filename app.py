@@ -62,6 +62,10 @@ def save_canvas(data: CanvasData):
             canvas_store["url"] = None
             
         return {"status": "success"}
+    except requests.exceptions.RequestException as e:
+        body = e.response.text if hasattr(e, 'response') and e.response is not None else str(e)
+        print(f"Canvas save request error: {body}")
+        raise HTTPException(status_code=500, detail=body)
     except Exception as e:
         print(f"Canvas save error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
