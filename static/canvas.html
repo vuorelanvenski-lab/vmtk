@@ -268,8 +268,25 @@
         }
         
         resizeCanvas();
-        // Initial state
-        setTimeout(() => saveState(), 100);
+
+        function loadExistingCanvas() {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                ctx.globalCompositeOperation = "source-over";
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                historyStep = -1;
+                history = [];
+                saveState();
+            };
+            img.src = `/api/canvas_image?t=${new Date().getTime()}`;
+        }
+        
+        loadExistingCanvas();
+        // Initial state fallback if loading fails or takes too long
+        setTimeout(() => {
+            if (history.length === 0) saveState();
+        }, 500);
 
         // Get coordinates relative to the fixed 1920x1080 canvas size
         function getCoordinates(e) {
