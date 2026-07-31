@@ -26,20 +26,12 @@
 
         body {
             font-family: 'Rubik', sans-serif;
-            background-color: #ffffff;
-            background-image: url('/static/tj54.png');
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: contain;
+            background-color: var(--bg-color);
             color: var(--text-main);
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            display: block;
-        }
-        
-        body > * {
-            display: none !important;
+            display: flex;
         }
 
         /* Sidebar - Large Logo */
@@ -288,6 +280,30 @@
             border-radius: 0.4vh;
             font-weight: 700;
             border: 1px solid var(--accent-green);
+        }
+
+        .lomakyyti-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3vh;
+            padding: 1vh 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .lomakyyti-item:last-child {
+            border-bottom: none;
+        }
+
+        .lomakyyti-name {
+            font-size: 2vh;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .lomakyyti-desc {
+            font-size: 1.5vh;
+            color: var(--text-dim);
+            font-style: italic;
         }
 
         /* Footer */
