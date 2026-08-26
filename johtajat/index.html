@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="fi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMTK - Johtajat</title>
+    <link rel="icon" type="image/webp" href="/static/VMTK.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #000000;
+            --sidebar-bg: #09090b;
+            --card-bg: #121214;
+            --card-border: #27272a;
+            --accent-color: #ffffff;
+            --accent-dim: #a1a1aa;
+            --text-main: #f4f4f5;
+            --text-dim: #71717a;
+            --badge-bg: #1c1c1f;
+            --badge-border: #3f3f46;
+            --progress-bg: #27272a;
+            --progress-fill: linear-gradient(90deg, #71717a, #ffffff);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar - Proportional Layout (40% Logo, 30% TJ, 30% Weather) */
+        .sidebar {
+            width: 30%;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            padding: 3vh 3.5vh;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        /* 40% Logo Section */
+        .sidebar-logo-section {
+            height: 40%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .sidebar-logo-section img {
+            width: 90%;
+            max-height: 92%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.08));
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-logo-section img:hover {
+            transform: scale(1.03);
+        }
+
+        /* 30% TJ Section */
+        .sidebar-tj-section {
+            height: 30%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .tj-sidebar-label {
+            font-size: 2.8vh;
+            font-weight: 700;
+            color: var(--accent-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5vh;
+            line-height: 1;
+            margin-bottom: 0.5vh;
+        }
+
+        .tj-sidebar-value {
+            font-size: 14vh;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 0.9;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
+        }
+
+        /* 30% Weather Section */
+        .sidebar-weather-section {
+            height: 30%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .weather-box {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 22px;
+            padding: 2.5vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.8vh;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .weather-title {
+            font-size: 1.8vh;
+            color: var(--accent-dim);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .weather-main {
+            display: flex;
+            align-items: center;
+            gap: 3vh;
+        }
+
+        .weather-icon {
+            font-size: 5.5vh;
+            color: #ffffff;
+        }
+
+        .weather-temp {
+            font-size: 6.5vh;
+            font-weight: 700;
+            line-height: 1;
+            color: #ffffff;
+        }
+
+        .weather-details {
+            display: flex;
+            justify-content: center;
+            gap: 3vh;
+            width: 100%;
+            font-size: 1.8vh;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .weather-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8vh;
+        }
+
+        /* Main Content Area */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2vh;
+            gap: 1.5vh;
+            min-width: 0;
+            background-color: var(--bg-color);
+        }
+
+        /* Header Bar */
+        .top-bar {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5vh 4vh;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--card-border);
+        }
+
+        .header-date {
+            font-size: 3.2vh;
+            font-weight: 700;
+        }
+
+        .header-tj {
+            font-size: 3.2vh;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        #header-batch {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 1vh;
+            user-select: none;
+        }
+
+        #header-batch:hover {
+            transform: scale(1.05);
+        }
+
+        /* Menu Section - Side by Side */
+        .menu-area {
+            flex: 1;
+            display: flex;
+            gap: 2.5vh;
+            min-height: 0;
+        }
+
+        .menu-column {
+            flex: 1;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 3vh;
+            display: flex;
+            flex-direction: column;
+            gap: 2vh;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-title {
+            font-size: 2.8vh;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 2vh;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-title::before {
+            content: '';
+            width: 0.8vh;
+            height: 4vh;
+            background-color: var(--accent-color);
+            display: block;
+            border-radius: 3px;
+        }
+
+        .menu-items {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2vh;
+            padding-right: 0.5vh;
+        }
+
+        .meal-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8vh;
+        }
+
+        .meal-name {
+            font-size: 2.2vh;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: capitalize;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.4vh;
+        }
+
+        .dish-line {
+            font-size: 1.8vh;
+            display: flex;
+            align-items: baseline;
+            gap: 1.2vh;
+            line-height: 1.35;
+        }
+
+        .dish-name {
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .diet-tags {
+            display: flex;
+            gap: 0.6vh;
+            flex-wrap: wrap;
+        }
+
+        .diet-tag {
+            background-color: var(--badge-bg);
+            color: #e4e4e7;
+            font-size: 1.1vh;
+            padding: 0.15vh 0.8vh;
+            border-radius: 0.4vh;
+            font-weight: 600;
+            border: 1px solid var(--badge-border);
+        }
+
+        /* Footer */
+        .footer-bar {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5vh 4vh;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vh;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 1.5vh;
+            background-color: var(--progress-bg);
+            border-radius: 1vh;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #71717a, #ffffff);
+            width: 0%;
+            transition: width 1s ease-in-out;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+
+        /* Batch Selection Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(12px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 26px;
+            padding: 4vh;
+            max-width: 80%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-title {
+            font-size: 4vh;
+            font-weight: 700;
+            margin-bottom: 4vh;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .batch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(15vh, 1fr));
+            gap: 2vh;
+        }
+
+        .batch-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 2.5vh;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 2.5vh;
+            font-weight: 700;
+            color: #e4e4e7;
+        }
+
+        .batch-item:hover {
+            background: #ffffff;
+            color: #000000;
+            transform: scale(1.05);
+        }
+
+        .batch-item.active {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            border-color: #ffffff;
+        }
+
+        /* Fun Sentence Ticker */
+        .ticker-wrap {
+            width: 100%;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.2vh 2.5vh;
+            display: none;
+            align-items: center;
+            gap: 2vh;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .ticker-content {
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker {
+            display: inline-block;
+            font-size: 2vh;
+            font-weight: 500;
+            color: var(--text-main);
+            padding-left: 100%;
+            animation: ticker-animation 15s linear infinite;
+        }
+
+        @keyframes ticker-animation {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        #message-input-container {
+            margin-top: 3vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1vh;
+        }
+
+        #fun-input {
+            background: #18181b;
+            border: 1px solid var(--card-border);
+            color: #fff;
+            padding: 1.5vh;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1.8vh;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        #fun-input:focus {
+            border-color: #71717a;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar (40% Logo, 25% TJ, 35% Weather) -->
+    <aside class="sidebar">
+        <div class="sidebar-logo-section">
+            <img src="/static/VMTK.webp" alt="VMTK Logo" onclick="openMessageModal()" style="cursor: pointer;">
+        </div>
+
+        <div class="sidebar-tj-section">
+            <div class="tj-sidebar-label">TJ</div>
+            <div class="tj-sidebar-value" id="tj-sidebar">--</div>
+        </div>
+
+        <div class="sidebar-weather-section">
+            <div class="weather-box" id="weather-widget" style="display: none;">
+                <div class="weather-title">Kajaani</div>
+                <div class="weather-main">
+                    <i class="fas fa-cloud-sun weather-icon" id="w-icon"></i>
+                    <div class="weather-temp" id="w-temp">--°</div>
+                </div>
+                <div class="weather-details">
+                    <div class="weather-detail-item">
+                        <i class="fas fa-wind"></i> <span id="w-wind">--</span> m/s
+                    </div>
+                    <div class="weather-detail-item">
+                        <i class="fas fa-tint"></i> <span id="w-rain">--</span> mm
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Batch Selection Modal -->
+    <div id="batch-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title">Valitse saapumiserä</div>
+            <div class="batch-grid" id="batch-grid">
+                <!-- Batches will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Input Modal -->
+    <div id="message-modal" class="modal-overlay" onclick="closeMessageModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title">Liikkuva teksti</div>
+            <input type="text" id="fun-input" placeholder="Kirjoita jotain hauskaa..." oninput="updateTicker()">
+            <button onclick="closeMessageModal()"
+                style="margin-top: 3vh; background: #ffffff; color: #000000; border: none; padding: 1.5vh 4vh; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 2vh;">OK</button>
+            <div style="margin-top: 2vh; color: var(--text-dim); font-size: 1.5vh;">Pyyhi tyhjäksi poistaaksesi</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 2vh; min-width: 20vh;">
+                <div id="header-clock" style="font-size: 3.2vh; font-weight: 700; color: #fff;"></div>
+            </div>
+
+            <div id="header-batch" onclick="openModal()"
+                style="font-size: 3.2vh; font-weight: 700; color: #ffffff; text-align: center; cursor: pointer;"></div>
+
+            <div class="header-date" id="date"
+                style="font-size: 3.2vh; font-weight: 700; text-align: right; min-width: 20vh; color: #ffffff;"></div>
+        </header>
+
+        <!-- Announcement/Ticker Bar -->
+        <div class="ticker-wrap" id="ticker-wrap">
+            <div class="ticker-content">
+                <div class="ticker" id="ticker-text"></div>
+            </div>
+        </div>
+
+        <main class="menu-area">
+            <div class="menu-column">
+                <div class="menu-title">Varusmiehet</div>
+                <div class="menu-items" id="conscript-list">Ladataan...</div>
+            </div>
+            <div class="menu-column">
+                <div class="menu-title">Henkilöstö</div>
+                <div class="menu-items" id="staff-list">Ladataan...</div>
+            </div>
+        </main>
+
+        <footer class="footer-bar">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.8vh; font-weight: 500;">
+                <span id="percent" style="color: var(--text-dim);">0% ohi</span>
+                <span id="countdown" style="color: var(--text-dim);">Ladataan laskuria...</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let currentBatch = null;
+        const BATCHES = [];
+        const STORAGE_BATCH_KEY = 'selectedBatch_johtajat';
+        const STORAGE_MSG_KEY = 'funMessage_johtajat';
+        const SERVICE_DAYS = 347; // Johtajat palvelevat 347 vrk
+
+        function getFirstMonday(year, month) {
+            let d = new Date(year, month, 1);
+            while (d.getDay() !== 1) {
+                d.setDate(d.getDate() + 1);
+            }
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        function initBatches() {
+            // Start from 2025 so current active batches (e.g. 2/25, 1/26, 2/26) are available
+            const startYear = 2025;
+            for (let y = startYear; y < startYear + 6; y++) {
+                // 1/xx
+                const s1 = getFirstMonday(y, 0);
+                const e1 = new Date(s1.getTime() + (SERVICE_DAYS - 1) * 24 * 60 * 60 * 1000);
+                BATCHES.push({ id: `1/${y.toString().slice(-2)}`, start: s1, end: e1 });
+
+                // 2/xx
+                const s2 = getFirstMonday(y, 6);
+                const e2 = new Date(s2.getTime() + (SERVICE_DAYS - 1) * 24 * 60 * 60 * 1000);
+                BATCHES.push({ id: `2/${y.toString().slice(-2)}`, start: s2, end: e2 });
+            }
+
+            // Load from storage or default to current active batch
+            const saved = localStorage.getItem(STORAGE_BATCH_KEY);
+            const now = new Date();
+            
+            if (saved && BATCHES.some(b => b.id === saved)) {
+                currentBatch = BATCHES.find(b => b.id === saved);
+            } else {
+                // Find currently active batch or closest upcoming
+                const active = BATCHES.find(b => now >= b.start && now <= b.end);
+                currentBatch = active || BATCHES.find(b => b.id === '1/26') || BATCHES[0];
+            }
+
+            updateHeaderBatch();
+            populateBatchGrid();
+        }
+
+        function updateHeaderBatch() {
+            const el = document.getElementById('header-batch');
+            if (el && currentBatch) {
+                el.textContent = `${currentBatch.id}`;
+            }
+        }
+
+        function populateBatchGrid() {
+            const grid = document.getElementById('batch-grid');
+            grid.innerHTML = '';
+            BATCHES.forEach(batch => {
+                const item = document.createElement('div');
+                item.className = 'batch-item' + (currentBatch && currentBatch.id === batch.id ? ' active' : '');
+                item.textContent = batch.id;
+                item.onclick = () => selectBatch(batch.id);
+                grid.appendChild(item);
+            });
+        }
+
+        function selectBatch(id) {
+            currentBatch = BATCHES.find(b => b.id === id);
+            localStorage.setItem(STORAGE_BATCH_KEY, id);
+            updateHeaderBatch();
+            closeModal();
+            updateTime();
+            populateBatchGrid();
+        }
+
+        function openModal() {
+            document.getElementById('batch-modal').style.display = 'flex';
+        }
+
+        function closeModal(e) {
+            document.getElementById('batch-modal').style.display = 'none';
+        }
+
+        function openMessageModal() {
+            document.getElementById('message-modal').style.display = 'flex';
+            document.getElementById('fun-input').focus();
+        }
+
+        function closeMessageModal() {
+            document.getElementById('message-modal').style.display = 'none';
+        }
+
+        function updateTicker() {
+            const input = document.getElementById('fun-input').value;
+            const wrap = document.getElementById('ticker-wrap');
+            const text = document.getElementById('ticker-text');
+
+            if (input.trim()) {
+                text.textContent = input;
+                wrap.style.display = 'flex';
+                localStorage.setItem(STORAGE_MSG_KEY, input);
+            } else {
+                wrap.style.display = 'none';
+                localStorage.removeItem(STORAGE_MSG_KEY);
+            }
+        }
+
+        function initMessage() {
+            const saved = localStorage.getItem(STORAGE_MSG_KEY);
+            if (saved) {
+                document.getElementById('fun-input').value = saved;
+                updateTicker();
+            }
+        }
+
+        function updateTime() {
+            if (!currentBatch) return;
+            const now = new Date();
+            const START_DATE = currentBatch.start;
+            const END_DATE = currentBatch.end;
+
+            // Date & Clock (24h)
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const dateStr = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()}`;
+            document.getElementById('date').textContent = dateStr;
+            const elClock = document.getElementById('header-clock');
+            if (elClock) {
+                elClock.textContent = `${hours}:${minutes}`;
+            }
+
+            // TJ calculation
+            const diff = END_DATE - now;
+            let days;
+            if (diff >= 0) {
+                days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            } else {
+                // Negative days for past batches (e.g. -1, -15, -100)
+                days = -Math.floor(Math.abs(diff) / (1000 * 60 * 60 * 24));
+            }
+
+            document.getElementById('tj-sidebar').textContent = days;
+
+            // Progress
+            const total = END_DATE - START_DATE;
+            const current = now - START_DATE;
+            const percent = Math.max(0, Math.min(100, (current / total) * 100));
+            document.getElementById('percent').textContent = `${percent.toFixed(1)}% ohi`;
+            document.getElementById('progress').style.width = `${percent}%`;
+
+            // Footer Countdown
+            const isPast = diff < 0;
+            const diffMs = Math.abs(diff);
+            const s = Math.floor(diffMs / 1000);
+            const m = Math.floor(s / 60);
+            const h = diffMs / (1000 * 60 * 60);
+            const w = diffMs / (1000 * 60 * 60 * 24 * 7);
+            const mo = diffMs / (1000 * 60 * 60 * 24 * 30.44);
+
+            const timeStr = `${mo.toFixed(1)} kk — ${w.toFixed(1)} vko — ${h.toFixed(1)} h — ${m} min — ${s} s`;
+            document.getElementById('countdown').textContent = isPast ? `Reservissä: ${timeStr}` : timeStr;
+        }
+
+        function formatList(data) {
+            if (!data || !data.meals) return 'Ei ruokalistaa.';
+            let html = '';
+            data.meals.forEach(meal => {
+                let name = meal.meal_name;
+                if (name.toLowerCase() === 'aamupala') return;
+                if (name.toLowerCase() === 'lounas 2') name = 'Päivällinen';
+
+                html += `<div class="meal-group">`;
+                html += `<div class="meal-name">${name}</div>`;
+                meal.dishes.forEach(dish => {
+                    html += `<div class="dish-line">`;
+                    html += `<span class="dish-name">• ${dish.name}</span>`;
+                    if (dish.diets) {
+                        html += `<div class="diet-tags">`;
+                        dish.diets.split(',').forEach(d => {
+                            if (d.trim()) html += `<span class="diet-tag">${d.trim()}</span>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            });
+            return html;
+        }
+
+        async function refresh() {
+            try {
+                const res = await fetch('/api/foodlist');
+                const json = await res.json();
+                if (json.data && !json.data.error) {
+                    const idx = (new Date().getDay() + 6) % 7;
+                    const conscriptMenu = json.data.conscript_menu[idx];
+                    const staffMenu = json.data.staff_menu[idx];
+
+                    document.getElementById('conscript-list').innerHTML = formatList(conscriptMenu);
+                    document.getElementById('staff-list').innerHTML = formatList(staffMenu);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function fetchWeather() {
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=64.2222&longitude=27.7286&current_weather=true&daily=precipitation_sum&timezone=Europe%2FHelsinki');
+                const data = await res.json();
+                if (data.current_weather) {
+                    document.getElementById('weather-widget').style.display = 'flex';
+                    document.getElementById('w-temp').textContent = Math.round(data.current_weather.temperature) + '°';
+                    document.getElementById('w-wind').textContent = Math.round(data.current_weather.windspeed);
+                    document.getElementById('w-rain').textContent = data.daily.precipitation_sum[0] || 0;
+
+                    const code = data.current_weather.weathercode;
+                    const icon = document.getElementById('w-icon');
+                    if (code <= 3) icon.className = 'fas fa-cloud-sun weather-icon';
+                    else if (code <= 48) icon.className = 'fas fa-cloud weather-icon';
+                    else if (code <= 67) icon.className = 'fas fa-cloud-showers-heavy weather-icon';
+                    else if (code <= 77) icon.className = 'fas fa-snowflake weather-icon';
+                    else icon.className = 'fas fa-bolt weather-icon';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function scheduleReload() {
+            const now = new Date();
+            const nextReload = new Date();
+            nextReload.setDate(now.getDate() + 1);
+            nextReload.setHours(0, 1, 0, 0); // Reload at 00:01
+
+            const diff = nextReload - now;
+            setTimeout(() => window.location.reload(), diff);
+        }
+
+        setInterval(updateTime, 1000);
+        setInterval(refresh, 1800000);
+        setInterval(fetchWeather, 1800000);
+        initBatches();
+        initMessage();
+        scheduleReload();
+        updateTime();
+        refresh();
+        fetchWeather();
+    </script>
+</body>
+
+</html>

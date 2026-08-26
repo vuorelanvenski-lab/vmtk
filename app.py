@@ -17,6 +17,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def read_root():
     return FileResponse("static/index.html")
 
+@app.get("/johtajat")
+@app.get("/johtajat/")
+def read_johtajat():
+    return FileResponse("static/johtajat.html")
+
 @app.get("/api/foodlist")
 def get_foodlist():
     """
